@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <!-- 写一个扫描器 -->
+    <context:component-scan base-package="com.chenxudong"/>
+    
+    <!-- 引入外部资源属性文件 -->
+	
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <!-- 2.数据库连接池  c3p0-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!-- 配置连接池属性 -->
+        <property name="driverClass" value="${driver}" />
+        <property name="jdbcUrl" value="${url}" />
+        <property name="user" value="${user}" />
+        <property name="password" value="${password}" />
+
+        <!-- c3p0连接池的私有属性 -->
+        <property name="maxPoolSize" value="30" />
+        <property name="minPoolSize" value="10" />
+        <!-- 关闭连接后不自动commit -->
+        <property name="autoCommitOnClose" value="false" />
+        <!-- 获取连接超时时间 -->
+        <property name="checkoutTimeout" value="10000" />
+        <!-- 当获取连接失败重试次数 -->
+        <property name="acquireRetryAttempts" value="2" />
+    </bean>
+
+
+    <!-- 写一个sqlsessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+       <!-- 注入dataSource -->
+       <property name="dataSource" ref="dataSource"/>
+        <!--mybatis主配置文件-->
+        <!-- <property name="configLocation" value="classpath:sqlMapConfig.xml"/> -->
+        <!-- 扫描entity包，使用别名-->
+        <property name="typeAliasesPackage" value="com.chenxudong.senior1.entity"/>
+        <!--扫描sql配置文件 mapper.xml-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+     </bean>
+
+    <!-- 4.配置扫描Dao接口包，动态实现Dao接口，注入到spring容器中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--注入sqlSessionFactory-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--给出需要扫描的Dao接口包-->
+        <property name="basePackage" value="com.chenxudong.senior1.mapper"/>
+    </bean>
+    
+    <!-- spring声明式事务 -->
+    <!-- 写一个事务管理器，就是切面类 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+       <!-- 注入sessionFactory -->
+       <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--开启切面自动代理-->
+    <!--<aop:aspectj-autoproxy></aop:aspectj-autoproxy>-->
+
+    <!-- 第一种：注解 -->
+     <tx:annotation-driven transaction-manager="transactionManager"/>
+
+
+
+    <!-- 第二种：配置文件方式 -->
+    <!-- 对方法增强事务 -->
+    <!--<tx:advice id="txAdvice" transaction-manager="transactionManager">-->
+       <!--<tx:attributes>-->
+         <!--<tx:method name="*"/>-->
+       <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+
+
+    <!-- 把AOP事务关联起来 -->
+    <!--<aop:config>-->
+       <!--&lt;!&ndash; 写一个切点表达式 &ndash;&gt;-->
+       <!--<aop:pointcut expression="execution(* com.service.*.*(..))" id="pointcut"/>-->
+       <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>-->
+    <!--</aop:config>-->
+
+</beans>

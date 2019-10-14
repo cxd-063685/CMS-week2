@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chenxudong.senior1.mapper.GoodsMapper">
+    
+    <insert id="addGoods" parameterType="com.chenxudong.senior1.entity.Goods">
+    	insert into goods values(#{gid},#{gname},#{price},#{print});
+    </insert>
+    
+    <select id="listGoods" parameterType="com.chenxudong.senior1.entity.SelectModel" resultType="com.chenxudong.senior1.entity.Goods">
+    	select * from goods 
+    	<where>
+    		<if test="pricebegin != null and pricebegin != ''">
+    			and price > #{pricebegin}
+    		</if>
+    		<if test="priceend != null and priceend != ''">
+    			and price &lt; #{priceend}
+    		</if>
+    		<if test="printbegin != null and printbegin != ''">
+    			and print > #{printbegin}
+    		</if>
+    		<if test="printend != null and printend != ''">
+    			and print &lt; #{printend}
+    		</if>
+    	</where>
+    	
+    	<if test="sortby == '已售百分比'">
+    		order by print
+    	</if>
+    	
+    	<if test="sortby == '价格'">
+    		order by price 
+    	</if>
+    	
+    	<if test="sortto == '倒序'">
+    		desc
+    	</if>
+    </select>
+    
+    
+</mapper>
